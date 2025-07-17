@@ -3,15 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\ExchangeRate;
+use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Http\Resources\ExchangeRateResource;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class ExchangeRateController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * List Exchange Rates.
+     *
+     * Retrieve a paginated list of exchange rates with optional filtering by currency and date.
+     *
+     * @query exchangeRate int required The ID of the exchange rate to retrieve.
      */
-    public function index(Request $request): JsonResponse
+    #[QueryParameter('currency', description: 'Filter exchange rates by currency code.', type: 'string', example: 'USD')]
+    #[QueryParameter('date', description: 'Filter exchange rates by date (YYYY-MM-DD).', type: 'string', example: '2025-07-15')]
+    #[QueryParameter('per_page', description: 'Number of results per page.', type: 'int', default: 15, example: '10')]
+    public function index(Request $request): AnonymousResourceCollection
     {
         $query = ExchangeRate::with('day');
 
@@ -26,30 +35,16 @@ class ExchangeRateController extends Controller
         }
 
         $paginated = $query->paginate($request->input('per_page', 15));
-
-        $paginated->getCollection()->transform(function ($rate) {
-            return [
-                'currency' => $rate->currency,
-                'rate' => number_format($rate->rate, 6),
-                'date' => $rate->day->date,
-            ];
-        });
-
-        return response()->json($paginated);
+        return ExchangeRateResource::collection($paginated);
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified exchange rate.
+     *
+     * @urlParam exchangeRate int required The ID of the exchange rate to retrieve.
      */
-    public function show(ExchangeRate $exchangeRate): JsonResponse
+    public function show(ExchangeRate $exchangeRate): ExchangeRateResource
     {
-        return response()->json([
-            'data' => [
-                'id' => $exchangeRate->id,
-                'currency' => $exchangeRate->currency,
-                'rate' => number_format($exchangeRate->rate, 6),
-                'date' => optional($exchangeRate->day)->date,
-            ]
-        ]);
+        return new ExchangeRateResource($exchangeRate);
     }
 }

@@ -38,12 +38,11 @@ it('paginates exchange rates', function () {
     }
 
     $response = $this->getJson('/api/rates?per_page=10&page=2');
-
     $response->assertStatus(200)
         ->assertJsonCount(10, 'data')
-        ->assertJsonPath('current_page', 2)
-        ->assertJsonPath('per_page', 10)
-        ->assertJsonPath('total', 25);
+        ->assertJsonPath('meta.current_page', 2)
+        ->assertJsonPath('meta.per_page', 10)
+        ->assertJsonPath('meta.total', 25);
 });
 
 it('filters exchange rates by date only', function () {
