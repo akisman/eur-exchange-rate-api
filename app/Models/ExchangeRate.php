@@ -12,6 +12,8 @@ class ExchangeRate extends Model
     /** @use HasFactory<ExchangeRateFactory> */
     use HasFactory;
 
+    protected $fillable = ['exchange_rate_day_id', 'currency', 'rate'];
+
     public function day(): BelongsTo
     {
         return $this->belongsTo(ExchangeRateDay::class, 'exchange_rate_day_id');

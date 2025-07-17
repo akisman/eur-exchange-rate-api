@@ -12,6 +12,8 @@ class ExchangeRateDay extends Model
     /** @use HasFactory<ExchangeRateDayFactory> */
     use HasFactory;
 
+    protected $fillable = ['date'];
+
     public function rates(): HasMany
     {
         return $this->hasMany(ExchangeRate::class);
