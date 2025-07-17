@@ -20,6 +20,7 @@ class ExchangeRateController extends Controller
     #[QueryParameter('currency', description: 'Filter exchange rates by currency code.', type: 'string', example: 'USD')]
     #[QueryParameter('date', description: 'Filter exchange rates by date (YYYY-MM-DD).', type: 'string', example: '2025-07-15')]
     #[QueryParameter('per_page', description: 'Number of results per page.', type: 'int', default: 15, example: '10')]
+    #[QueryParameter('page', description: 'Page number to retrieve.', type: 'int', default: 1, example: 2)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = ExchangeRate::with('day');
