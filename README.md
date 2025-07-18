@@ -1,61 +1,147 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🇪🇺 Exchange Rate API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This Laravel application fetches daily EUR exchange rates from the European Central Bank (ECB) and exposes them via a JSON API. It supports filtering, pagination, and retrieval of individual records.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* Fetches latest exchange rates from the [ECB daily XML feed](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml)
+* Stores exchange rates by date and currency
+* API endpoints to:
+    * Retrieve all exchange rates (with filters for `date`, `currency`, and pagination)
+    * Fetch a single exchange rate by ID
+* Test-driven development using [Pest](https://pestphp.com/)
+* API documentation with Swagger
+* Dockerized for local development
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## API Endpoints
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### `GET /api/rates`
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Returns a paginated list of exchange rates.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+#### Query Parameters:
 
-## Laravel Sponsors
+* `currency=USD`
+* `date=2025-07-17`
+* `per_page=15`
+* `page=2`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+### `GET /api/rates/{id}`
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Returns a single exchange rate record by ID.
 
-## Contributing
+> Full API documentation (Swagger) available at `/docs/api` after the application is up.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Getting Started
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Prerequisites
 
-## Security Vulnerabilities
+* [Docker](https://www.docker.com/)
+* [Docker Compose](https://docs.docker.com/compose/)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+### Quick Setup with Docker
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project includes a `docker-compose.yml` file and a `manage.sh` script to simplify setup and development.
+
+---
+
+#### 1. Clone & Configure
+
+Create your `.env` file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` if needed (e.g., DB credentials, app URL). Specifically, if you want to use MariaDB as defined in the 
+`docker-compose.yml` file, adjust the database connection info, e.g.:
+
+```
+DB_CONNECTION=mariadb
+DB_HOST=mariadb # This is the docker compose service name
+DB_PORT=3306
+DB_DATABASE=database_name
+DB_USERNAME=database_user
+DB_PASSWORD=database_password
+DB_ROOTPASSWORD=database_root_password
+```
+
+---
+
+#### 2. Use the Helper Script
+
+Make the script executable:
+
+```bash
+chmod +x manage.sh
+```
+
+Then use it like:
+
+```bash
+./manage.sh build      # Build containers
+./manage.sh up         # Start containers
+./manage.sh down       # Stop containers
+./manage.sh install    # Install Composer & NPM dependencies
+./manage.sh migrate    # Run migrations and seeders
+./manage.sh test       # Run tests with coverage
+```
+
+---
+
+#### 3. Full Installation
+
+```bash
+./manage.sh build
+./manage.sh install
+./manage.sh migrate
+```
+
+Visit the app at: [http://app.localhost](http://app.localhost)
+
+---
+
+## Fetching Exchange Rates
+
+Manually trigger a fetch from the ECB:
+
+```bash
+docker compose exec --user $(id -u):$(id -g) app php artisan app:fetch-exchange-rates
+```
+
+This will fetch and store (or update) exchange rates for the latest available date.
+
+---
+
+## Running Tests
+
+Run Pest tests with coverage:
+
+```bash
+./manage.sh test
+```
+
+The HTML coverage report will be generated inside the `coverage/` directory.
+
+---
+
+## Code Structure
+
+| Path                                          | Purpose                                   |
+| --------------------------------------------- | ----------------------------------------- |
+| `App\Services\ExchangeRateImporter`           | Fetches & parses ECB XML data             |
+| `App\Console\Commands\FetchExchangeRates`     | Artisan command to import rates           |
+| `App\Http\Controllers\ExchangeRateController` | Handles the API endpoints                 |
+| `App\Models\ExchangeRateDay`                  | Represents each date of data              |
+| `App\Models\ExchangeRate`                     | Represents a rate entry (currency + rate) |
+
